@@ -1,0 +1,20 @@
+name: 'Pull Request Phrase'
+description: 'Create a PR after the Phrase pull'
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v4
+    - uses: phrase/setup-cli@v1
+      with:
+        version: 2.19.0
+    - run: | 
+        phrase pull
+        git checkout -b phrase/update
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        git diff --quiet || (git add --all && git commit -m "DO-OO feat: update phrase" --no-verify)
+        git push origin phrase/update
+        gh pr create -B main -H phrase/update --title 'DO-OO feat: update phrase' --body 'Created by Github action'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
