@@ -8,13 +8,21 @@ runs:
     - uses: phrase/setup-cli@v1
       with:
         version: 2.19.0
-    - run: | 
+    - run: |
         phrase pull
-        git checkout -b phrase/update
-        git config user.name github-actions
-        git config user.email github-actions@github.com
-        git diff --quiet || (git add --all && git commit -m "DO-OO feat: update phrase" --no-verify)
-        git push origin phrase/update
-        gh pr create -B main -H phrase/update --title 'DO-OO feat: update phrase' --body 'Created by Github action'
+        git diff --quiet
+        if [ "$?" != "0" ]
+        then
+          echo "New Phrase strings to commit..."
+          git checkout -b phrase/update
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add --all
+          git commit --message "DO-OO feat: update phrase" --no-verify
+          git push origin phrase/update --no-verify
+          gh pr create -B main -H phrase/update --title 'DO-OO feat: Update Phrase strings' --body 'Created by Github action'
+        else
+          echo "No new Phrase strings!"
+        fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
